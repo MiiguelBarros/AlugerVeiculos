@@ -1,3 +1,5 @@
+using API.AutenticacaoAutorizacao.Interfaces;
+using API.AutenticacaoAutorizacao.Services;
 using API.Data;
 using API.Utils;
 using DotNetEnv;
@@ -7,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -34,7 +37,36 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuerSigningKey = true,
         ClockSkew = TimeSpan.Zero
     };
+
+    x.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var authService = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+
+            await authService.VerifyJwtTokenIdPresenceAsync(context);
+        },
+        OnChallenge = JwtBearerEventHandlers.OnChallenge,
+        OnForbidden = JwtBearerEventHandlers.OnForbidden
+    };
 });
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = RateLimitRejectionHandler.OnRejected;
+
+    options.AddPolicy("auth", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 15,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+});
+
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddDbContext<AlugerVeiculosContext>((sp, options) =>
 {
@@ -140,6 +172,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseRateLimiter();
 
 app.UseAuthorization();
 
