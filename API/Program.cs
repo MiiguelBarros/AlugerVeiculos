@@ -107,6 +107,21 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AlugerVeiculosContext>();
+
+    if (app.Environment.IsDevelopment() && config.GetValue<bool>("Seed:TestData"))
+    {
+        await DbInitializer.SeedTestData(context, app.Environment);
+    }
+    else
+    {
+        await context.Database.MigrateAsync();
+        await DbInitializer.SeedEssentials(context, config);
+    }
+}
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (builder.Environment.IsDevelopment())
