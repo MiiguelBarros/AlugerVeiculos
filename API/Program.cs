@@ -4,6 +4,8 @@ using API.Data;
 using API.Utilizadores.Interfaces;
 using API.Utilizadores.Services;
 using API.Utils;
+using API.Veiculos.Interfaces;
+using API.Veiculos.Services;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +72,7 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 builder.Services.AddDbContext<AlugerVeiculosContext>((sp, options) =>
 {

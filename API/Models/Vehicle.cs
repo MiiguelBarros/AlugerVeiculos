@@ -21,5 +21,10 @@ namespace API.Models
         public ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsRentedOn(DateOnly date)
+        {
+            return Contracts.Any(c => c.IsOngoingOn(date));
+        }
     }
 }

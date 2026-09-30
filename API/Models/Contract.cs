@@ -25,5 +25,10 @@
         public DateTime? CancelledAt { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsOngoingOn(DateOnly date)
+        {
+            return CancelledAt == null && ReturnedAt == null && StartDate <= date;
+        }
     }
 }
