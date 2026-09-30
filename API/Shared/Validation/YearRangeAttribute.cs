@@ -19,7 +19,9 @@ namespace API.Shared.Validation
             var currentYear = DateTime.Today.Year;
 
             if (year < minimumYear || year > currentYear)
-                return new ValidationResult($"O ano tem de estar entre {minimumYear} e {currentYear}.");
+                return new ValidationResult(
+                    $"O ano tem de estar entre {minimumYear} e {currentYear}.",
+                    validationContext.MemberName == null ? null : new[] { validationContext.MemberName });
 
             return ValidationResult.Success;
         }
