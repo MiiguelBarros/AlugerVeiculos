@@ -82,6 +82,7 @@ namespace API.Utils
                     break;
 
                 case DbUpdateException { InnerException: SqlException { Number: 1205 } }:
+                case SqlException { Number: 1205 }:
                     statusCode = StatusCodes.Status503ServiceUnavailable;
                     message = "Não foi possível concluir a operação devido a um conflito. Tente novamente.";
                     break;

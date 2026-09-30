@@ -1,4 +1,6 @@
-﻿namespace API.Models
+﻿using API.Models.Enums;
+
+namespace API.Models
 {
     public class Contract
     {
@@ -29,6 +31,23 @@
         public bool IsOngoingOn(DateOnly date)
         {
             return CancelledAt == null && ReturnedAt == null && StartDate <= date;
+        }
+
+        public ContractStatus GetStatusOn(DateOnly date)
+        {
+            if (CancelledAt != null)
+                return ContractStatus.Cancelled;
+
+            if (ReturnedAt != null)
+                return ContractStatus.Completed;
+
+            if (StartDate > date)
+                return ContractStatus.Scheduled;
+
+            if (EndDate < date)
+                return ContractStatus.Overdue;
+
+            return ContractStatus.Active;
         }
     }
 }
