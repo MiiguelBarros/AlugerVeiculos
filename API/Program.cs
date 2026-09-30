@@ -1,5 +1,7 @@
 using API.AutenticacaoAutorizacao.Interfaces;
 using API.AutenticacaoAutorizacao.Services;
+using API.Clientes.Interfaces;
+using API.Clientes.Services;
 using API.Data;
 using API.Utilizadores.Interfaces;
 using API.Utilizadores.Services;
@@ -73,6 +75,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddDbContext<AlugerVeiculosContext>((sp, options) =>
 {
