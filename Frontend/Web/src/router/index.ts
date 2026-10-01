@@ -28,6 +28,12 @@ const router = createRouter({
           component: () => import('@/Veiculos/components/VehiclesPage.vue'),
           meta: { roles: ['Manager', 'Employee'] },
         },
+        {
+          path: 'clientes',
+          name: 'clients',
+          component: () => import('@/Clientes/components/ClientsPage.vue'),
+          meta: { roles: ['Manager', 'Employee'] },
+        },
       ],
     },
     {
