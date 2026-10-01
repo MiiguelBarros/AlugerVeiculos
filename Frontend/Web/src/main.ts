@@ -1,5 +1,7 @@
-import './assets/main.css'
+import '@fontsource/roboto-condensed/700.css'
+import '@fontsource/roboto-condensed/900.css'
 import 'primeicons/primeicons.css'
+import './assets/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -10,7 +12,7 @@ import pt from 'primelocale/pt.json'
 
 import App from './App.vue'
 import router from './router'
-import JapPreset from './Shared/theme/JapPreset'
+import AppPreset from './Shared/theme/AppPreset'
 
 const app = createApp(App)
 
@@ -18,7 +20,7 @@ app.use(createPinia())
 app.use(router)
 app.use(PrimeVue, {
   theme: {
-    preset: JapPreset,
+    preset: AppPreset,
     options: { darkModeSelector: '.app-dark' },
   },
   locale: { ...pt.pt, firstDayOfWeek: 1 },
