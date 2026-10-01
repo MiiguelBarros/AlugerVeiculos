@@ -21,7 +21,14 @@ const router = createRouter({
     {
       path: '/',
       component: () => import('@/Shared/components/AppLayout.vue'),
-      children: [],
+      children: [
+        {
+          path: 'veiculos',
+          name: 'vehicles',
+          component: () => import('@/Veiculos/components/VehiclesPage.vue'),
+          meta: { roles: ['Manager', 'Employee'] },
+        },
+      ],
     },
     {
       path: '/:pathMatch(.*)*',
