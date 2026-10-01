@@ -112,6 +112,30 @@ namespace UnitTests.Veiculos
         }
 
         [Fact]
+        public async Task GetAllAsync_VehicleWithReturnedContracts_ReturnsLastMileage()
+        {
+            var client = TestData.CreateClient();
+            var vehicle = TestData.CreateVehicle();
+            database.Seed(
+                TestData.CreateContract(client, vehicle, -20, -15, startMileage: 14000, returnedInDays: -15, endMileage: 14800),
+                TestData.CreateContract(client, vehicle, -10, -5, startMileage: 14800, returnedInDays: -5, endMileage: 15300));
+
+            var vehicles = await CreateService().GetAllAsync(new VehicleFilterDTO());
+
+            Assert.Equal(15300, Assert.Single(vehicles).LastMileage);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_VehicleWithoutReturnedContracts_ReturnsNoLastMileage()
+        {
+            database.Seed(TestData.CreateContract(TestData.CreateClient(), TestData.CreateVehicle(), -1, 3));
+
+            var vehicles = await CreateService().GetAllAsync(new VehicleFilterDTO());
+
+            Assert.Null(Assert.Single(vehicles).LastMileage);
+        }
+
+        [Fact]
         public async Task DeactivateAsync_VehicleWithPendingContract_ThrowsVehicleHasPendingContractsException()
         {
             var vehicle = TestData.CreateVehicle();

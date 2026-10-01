@@ -21,6 +21,8 @@ namespace API.Veiculos.DTOs
 
         public VehicleAvailability Availability { get; set; }
 
+        public int? LastMileage { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public static ICollection<VehicleDTO> FromModelList(ICollection<Vehicle> models, DateOnly today)
@@ -46,6 +48,7 @@ namespace API.Veiculos.DTOs
                 FuelType = model.FuelType,
                 Status = model.Status,
                 Availability = model.IsRentedOn(today) ? VehicleAvailability.Rented : VehicleAvailability.Available,
+                LastMileage = model.GetLastMileage(),
                 CreatedAt = model.CreatedAt
             };
         }
