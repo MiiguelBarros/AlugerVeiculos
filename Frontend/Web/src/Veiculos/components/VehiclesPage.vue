@@ -24,6 +24,7 @@ import {
 import type { RecordStatus } from '@/Shared/models/RecordStatus'
 import type { Vehicle } from '@/Veiculos/models/Vehicle'
 import type { VehicleAvailability } from '@/Veiculos/models/VehicleAvailability'
+import TruncatedText from '@/Shared/components/TruncatedText.vue'
 
 type AvailabilityFilter = VehicleAvailability | 'All'
 type StatusFilter = RecordStatus | 'All'
@@ -181,8 +182,16 @@ onMounted(loadVehicles)
               <span class="plate">{{ data.licensePlate }}</span>
             </template>
           </Column>
-          <Column field="brand" header="Marca" sortable />
-          <Column field="model" header="Modelo" sortable />
+          <Column field="brand" header="Marca" sortable>
+            <template #body="{ data }">
+                <TruncatedText :text="data.brand" max-width="10rem" />
+            </template>
+          </Column>
+          <Column field="model" header="Modelo" sortable>
+            <template #body="{ data }">
+                <TruncatedText :text="data.model" max-width="10rem" />
+            </template>
+          </Column>
           <Column field="year" header="Ano" sortable />
           <Column field="fuelType" header="Combustível" sortable>
             <template #body="{ data }">{{ fuelTypeLabels[data.fuelType as Vehicle['fuelType']] }}</template>
