@@ -23,6 +23,16 @@ const router = createRouter({
       component: () => import('@/Shared/components/AppLayout.vue'),
       children: [
         {
+          path: '',
+          redirect: { name: 'contracts' },
+        },
+        {
+          path: 'contratos',
+          name: 'contracts',
+          component: () => import('@/Contratos/components/ContractsPage.vue'),
+          meta: { roles: ['Manager', 'Employee'] },
+        },
+        {
           path: 'veiculos',
           name: 'vehicles',
           component: () => import('@/Veiculos/components/VehiclesPage.vue'),

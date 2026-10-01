@@ -11,5 +11,6 @@ export interface Vehicle {
   fuelType: FuelType
   status: RecordStatus
   availability: VehicleAvailability
+  lastMileage: number | null
   createdAt: string
 }

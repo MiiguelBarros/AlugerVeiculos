@@ -28,6 +28,11 @@ body {
   font-weight: 700;
 }
 
+.field-hint {
+  color: #6b7075;
+  font-size: 0.8125rem;
+}
+
 .page-header {
   display: flex;
   align-items: flex-end;

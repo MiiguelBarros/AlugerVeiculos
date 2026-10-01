@@ -196,6 +196,9 @@ onMounted(loadVehicles)
           <Column field="fuelType" header="Combustível" sortable>
             <template #body="{ data }">{{ fuelTypeLabels[data.fuelType as Vehicle['fuelType']] }}</template>
           </Column>
+          <Column field="lastMileage" header="Quilometragem" sortable>
+            <template #body="{ data }">{{ data.lastMileage === null ? '—' : `${data.lastMileage} km` }}</template>
+          </Column>
           <Column field="availability" header="Disponibilidade" sortable>
             <template #body="{ data }">
               <Tag

@@ -1,3 +1,4 @@
+import type { ContractStatus } from '@/Contratos/models/ContractStatus'
 import type { RecordStatus } from '@/Shared/models/RecordStatus'
 import type { Role } from '@/Shared/models/Role'
 import type { TagSeverity } from '@/Shared/models/TagSeverity'
@@ -34,6 +35,22 @@ export const vehicleAvailabilityLabels: Record<VehicleAvailability, string> = {
 export const vehicleAvailabilitySeverities: Record<VehicleAvailability, TagSeverity> = {
   Available: 'success',
   Rented: 'info',
+}
+
+export const contractStatusLabels: Record<ContractStatus, string> = {
+  Scheduled: 'Agendado',
+  Active: 'Ativo',
+  Overdue: 'Em atraso',
+  Completed: 'Concluído',
+  Cancelled: 'Cancelado',
+}
+
+export const contractStatusSeverities: Record<ContractStatus, TagSeverity> = {
+  Scheduled: 'secondary',
+  Active: 'info',
+  Overdue: 'danger',
+  Completed: 'success',
+  Cancelled: 'secondary',
 }
 
 export function toOptions<T extends string>(labels: Record<T, string>): { label: string; value: T }[] {
