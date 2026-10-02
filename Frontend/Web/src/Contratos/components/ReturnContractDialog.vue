@@ -8,6 +8,7 @@ import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import { contractService } from '@/Contratos/services/contract.service'
 import { getErrorMessage, getValidationErrors } from '@/Shared/utils/apiErrors'
+import { formatCurrency } from '@/Shared/utils/currency'
 import { formatDate, parseDateOnly, today, toDateOnly } from '@/Shared/utils/dates'
 import type { Contract } from '@/Contratos/models/Contract'
 import type { ValidationErrors } from '@/Shared/models/ResponseDTO'
@@ -94,6 +95,14 @@ async function submit() {
         <div>
           <dt>Quilometragem inicial</dt>
           <dd>{{ contract.startMileage }} km</dd>
+        </div>
+        <div>
+          <dt>Preço por dia</dt>
+          <dd>{{ formatCurrency(contract.dailyRate) }}</dd>
+        </div>
+        <div>
+          <dt>Total</dt>
+          <dd>{{ formatCurrency(contract.totalPrice) }} ({{ contract.numberOfDays }} dia(s))</dd>
         </div>
       </dl>
 

@@ -133,7 +133,8 @@ namespace API.Contratos.Services
                 CreatedByUser = createdByUser,
                 StartDate = startDate,
                 EndDate = endDate,
-                StartMileage = dto.StartMileage!.Value
+                StartMileage = dto.StartMileage!.Value,
+                DailyRate = dto.DailyRate!.Value
             };
 
             await context.Contracts.AddAsync(contract);

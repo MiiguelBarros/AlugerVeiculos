@@ -22,6 +22,10 @@ namespace API.Contratos.DTOs
         [Range(0, int.MaxValue, ErrorMessage = "A quilometragem inicial não pode ser negativa.")]
         public int? StartMileage { get; set; }
 
+        [Required(ErrorMessage = "O preço por dia é obrigatório.")]
+        [Range(0.01, 9999.99, ErrorMessage = "O preço por dia tem de estar entre 0,01 € e 9999,99 €.")]
+        public decimal? DailyRate { get; set; }
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);

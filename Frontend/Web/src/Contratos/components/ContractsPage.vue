@@ -16,6 +16,7 @@ import TruncatedText from '@/Shared/components/TruncatedText.vue'
 import { contractService } from '@/Contratos/services/contract.service'
 import { useAuthStore } from '@/AutenticacaoAutorizacao/stores/auth.store'
 import { getErrorMessage } from '@/Shared/utils/apiErrors'
+import { formatCurrency } from '@/Shared/utils/currency'
 import { formatDate, today, toDateOnly } from '@/Shared/utils/dates'
 import { contractStatusLabels, contractStatusSeverities } from '@/Shared/utils/labels'
 import type { Contract } from '@/Contratos/models/Contract'
@@ -181,6 +182,13 @@ onMounted(loadContracts)
             <template #body="{ data }">
               {{ data.startMileage }} km
               <template v-if="data.endMileage !== null">→ {{ data.endMileage }} km</template>
+            </template>
+          </Column>
+          <Column field="totalPrice" header="Preço" sortable>
+            <template #body="{ data }">
+              <span :title="`${formatCurrency(data.dailyRate)} por dia · ${data.numberOfDays} dia(s)`">
+                {{ formatCurrency(data.totalPrice) }}
+              </span>
             </template>
           </Column>
           <Column field="createdByUserName" header="Criado por" sortable>

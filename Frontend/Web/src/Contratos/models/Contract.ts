@@ -12,6 +12,9 @@ export interface Contract {
   endDate: string
   startMileage: number
   endMileage: number | null
+  dailyRate: number
+  numberOfDays: number
+  totalPrice: number
   returnedAt: string | null
   cancelledAt: string | null
   status: ContractStatus

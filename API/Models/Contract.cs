@@ -22,6 +22,8 @@ namespace API.Models
 
         public int? EndMileage { get; set; }
 
+        public decimal DailyRate { get; set; }
+
         public DateOnly? ReturnedAt { get; set; }
 
         public DateTime? CancelledAt { get; set; }
@@ -31,6 +33,16 @@ namespace API.Models
         public User CreatedByUser { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int GetNumberOfDays()
+        {
+            return EndDate.DayNumber - StartDate.DayNumber;
+        }
+
+        public decimal GetTotalPrice()
+        {
+            return DailyRate * GetNumberOfDays();
+        }
 
         public bool IsPending()
         {

@@ -13,7 +13,8 @@ namespace UnitTests.Contratos
                 VehicleId = 1,
                 StartDate = TestData.Today.AddDays(startInDays),
                 EndDate = TestData.Today.AddDays(endInDays),
-                StartMileage = 1000
+                StartMileage = 1000,
+                DailyRate = 50
             };
         }
 
@@ -23,12 +24,25 @@ namespace UnitTests.Contratos
         [InlineData(nameof(CreateContractDTO.StartDate))]
         [InlineData(nameof(CreateContractDTO.EndDate))]
         [InlineData(nameof(CreateContractDTO.StartMileage))]
+        [InlineData(nameof(CreateContractDTO.DailyRate))]
         public void Validate_MissingRequiredField_ReturnsRequiredError(string field)
         {
             var request = CreateValidRequest();
             DtoValidator.ClearField(request, field);
 
             Assert.Contains(field, DtoValidator.InvalidFields(request));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-10)]
+        [InlineData(10000)]
+        public void Validate_DailyRateOutOfRange_ReturnsError(decimal dailyRate)
+        {
+            var request = CreateValidRequest();
+            request.DailyRate = dailyRate;
+
+            Assert.Contains(nameof(CreateContractDTO.DailyRate), DtoValidator.InvalidFields(request));
         }
 
         [Fact]

@@ -70,12 +70,12 @@ namespace API.Data
 
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            var completed = new Contract { CreatedByUser = manager, Client = tiago, Vehicle = clio, StartDate = today.AddDays(-20), EndDate = today.AddDays(-15), StartMileage = 14000, EndMileage = 14800, ReturnedAt = today.AddDays(-15) };
-            var completedEarly = new Contract { CreatedByUser = employee, Client = joao, Vehicle = tesla, StartDate = today.AddDays(-12), EndDate = today.AddDays(-5), StartMileage = 5000, EndMileage = 5600, ReturnedAt = today.AddDays(-8) };
-            var scheduled = new Contract { CreatedByUser = employee, Client = joao, Vehicle = clio, StartDate = today.AddDays(3), EndDate = today.AddDays(7), StartMileage = 14800 };
-            var active = new Contract { CreatedByUser = employee, Client = maria, Vehicle = peugeot, StartDate = today.AddDays(-2), EndDate = today.AddDays(3), StartMileage = 42000 };
-            var overdue = new Contract { CreatedByUser = manager, Client = ana, Vehicle = golf, StartDate = today.AddDays(-10), EndDate = today.AddDays(-2), StartMileage = 120000 };
-            var cancelled = new Contract { CreatedByUser = employee, Client = sofia, Vehicle = corolla, StartDate = today.AddDays(5), EndDate = today.AddDays(8), StartMileage = 8000, CancelledAt = DateTime.UtcNow.AddDays(-1) };
+            var completed = new Contract { DailyRate = 45, CreatedByUser = manager, Client = tiago, Vehicle = clio, StartDate = today.AddDays(-20), EndDate = today.AddDays(-15), StartMileage = 14000, EndMileage = 14800, ReturnedAt = today.AddDays(-15) };
+            var completedEarly = new Contract { DailyRate = 95, CreatedByUser = employee, Client = joao, Vehicle = tesla, StartDate = today.AddDays(-12), EndDate = today.AddDays(-5), StartMileage = 5000, EndMileage = 5600, ReturnedAt = today.AddDays(-8) };
+            var scheduled = new Contract { DailyRate = 45, CreatedByUser = employee, Client = joao, Vehicle = clio, StartDate = today.AddDays(3), EndDate = today.AddDays(7), StartMileage = 14800 };
+            var active = new Contract { DailyRate = 50, CreatedByUser = employee, Client = maria, Vehicle = peugeot, StartDate = today.AddDays(-2), EndDate = today.AddDays(3), StartMileage = 42000 };
+            var overdue = new Contract { DailyRate = 35, CreatedByUser = manager, Client = ana, Vehicle = golf, StartDate = today.AddDays(-10), EndDate = today.AddDays(-2), StartMileage = 120000 };
+            var cancelled = new Contract { DailyRate = 60, CreatedByUser = employee, Client = sofia, Vehicle = corolla, StartDate = today.AddDays(5), EndDate = today.AddDays(8), StartMileage = 8000, CancelledAt = DateTime.UtcNow.AddDays(-1) };
 
             await context.Contracts.AddRangeAsync(completed, completedEarly, scheduled, active, overdue, cancelled);
             await context.SaveChangesAsync();

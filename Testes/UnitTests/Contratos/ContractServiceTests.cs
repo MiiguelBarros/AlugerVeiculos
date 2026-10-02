@@ -32,7 +32,8 @@ namespace UnitTests.Contratos
                 VehicleId = vehicle.VehicleId,
                 StartDate = TestData.Today.AddDays(startInDays),
                 EndDate = TestData.Today.AddDays(endInDays),
-                StartMileage = startMileage
+                StartMileage = startMileage,
+                DailyRate = 50
             };
         }
 
@@ -82,6 +83,20 @@ namespace UnitTests.Contratos
 
             Assert.Equal(employee.UserId, contract.CreatedByUserId);
             Assert.Equal(employee.Name, contract.CreatedByUserName);
+        }
+
+        [Fact]
+        public async Task CreateAsync_ValidContract_CalculatesTotalPrice()
+        {
+            var client = TestData.CreateClient();
+            var vehicle = TestData.CreateVehicle();
+            database.Seed(client, vehicle);
+
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 1, 5));
+
+            Assert.Equal(50, contract.DailyRate);
+            Assert.Equal(4, contract.NumberOfDays);
+            Assert.Equal(200, contract.TotalPrice);
         }
 
         [Fact]

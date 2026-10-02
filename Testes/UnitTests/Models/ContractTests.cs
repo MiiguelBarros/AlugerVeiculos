@@ -15,6 +15,15 @@ namespace UnitTests.Models
         }
 
         [Fact]
+        public void GetTotalPrice_FourDayContract_ReturnsDailyRateTimesNumberOfDays()
+        {
+            var contract = TestData.CreateContract(TestData.CreateClient(), TestData.CreateVehicle(), 1, 5, dailyRate: 45.50m);
+
+            Assert.Equal(4, contract.GetNumberOfDays());
+            Assert.Equal(182, contract.GetTotalPrice());
+        }
+
+        [Fact]
         public void GetStatusOn_StartDateInFuture_ReturnsScheduled()
         {
             var contract = CreateContract(3, 7);

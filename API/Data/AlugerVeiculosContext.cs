@@ -117,6 +117,9 @@ namespace API.Data
                 .HasIndex(rt => rt.TokenHash)
                 .IsUnique();
 
+            // Decimal precision
+            modelBuilder.Entity<Contract>().Property(c => c.DailyRate).HasPrecision(10, 2);
+
             // Availability lookups
             modelBuilder.Entity<Contract>()
                 .HasIndex(c => new { c.VehicleId, c.StartDate, c.EndDate });
