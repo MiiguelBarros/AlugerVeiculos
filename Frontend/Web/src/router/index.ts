@@ -44,6 +44,12 @@ const router = createRouter({
           component: () => import('@/Clientes/components/ClientsPage.vue'),
           meta: { roles: ['Manager', 'Employee'] },
         },
+        {
+          path: 'utilizadores',
+          name: 'users',
+          component: () => import('@/Utilizadores/components/UserPage.vue'),
+          meta: { roles: ['Manager'] },
+        },
       ],
     },
     {
