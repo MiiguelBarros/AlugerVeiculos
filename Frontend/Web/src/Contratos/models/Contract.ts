@@ -15,5 +15,7 @@ export interface Contract {
   returnedAt: string | null
   cancelledAt: string | null
   status: ContractStatus
+  createdByUserId: number
+  createdByUserName: string
   createdAt: string
 }

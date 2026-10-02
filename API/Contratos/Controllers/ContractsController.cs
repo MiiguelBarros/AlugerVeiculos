@@ -2,6 +2,7 @@ using API.Contratos.DTOs;
 using API.Contratos.Interfaces;
 using API.Models.Enums;
 using API.Shared.DTOs;
+using API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,7 +61,7 @@ namespace API.Contratos.Controllers
         [ProducesResponseType(typeof(ResponseDTO<string>), StatusCodes.Status503ServiceUnavailable)]
         public async Task<ActionResult<ResponseDTO<ContractDTO>>> Create([FromBody] CreateContractDTO contractDTO)
         {
-            var contract = await contractService.CreateAsync(contractDTO);
+            var contract = await contractService.CreateAsync(contractDTO, User.GetUserId());
 
             return CreatedAtAction(nameof(GetById), new { id = contract.ContractId },
                 ResponseDTO<ContractDTO>.Ok("Contrato criado com sucesso.", contract, StatusCodes.Status201Created));

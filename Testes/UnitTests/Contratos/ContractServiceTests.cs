@@ -4,6 +4,7 @@ using API.Contratos.Exceptions;
 using API.Contratos.Services;
 using API.Models;
 using API.Models.Enums;
+using API.Utilizadores.Exceptions;
 using API.Veiculos.Exceptions;
 using UnitTests.Infrastructure;
 
@@ -12,8 +13,16 @@ namespace UnitTests.Contratos
     public class ContractServiceTests : IDisposable
     {
         private readonly TestDatabase database = new();
+        private readonly User employee = TestData.CreateUser("rui@test.com", Role.Employee);
+
+        public ContractServiceTests()
+        {
+            database.Seed(employee);
+        }
 
         private ContractService CreateService() => new(database.CreateContext());
+
+        private Task<ContractDTO> CreateContractAsync(CreateContractDTO request) => CreateService().CreateAsync(request, employee.UserId);
 
         private static CreateContractDTO CreateRequest(Client client, Vehicle vehicle, int startInDays, int endInDays, int startMileage = 1000)
         {
@@ -36,7 +45,7 @@ namespace UnitTests.Contratos
             database.Seed(vehicle);
             var request = CreateRequest(new Client { ClientId = 999 }, vehicle, 1, 5);
 
-            await Assert.ThrowsAsync<ClientNotFoundException>(() => CreateService().CreateAsync(request));
+            await Assert.ThrowsAsync<ClientNotFoundException>(() => CreateContractAsync(request));
         }
 
         [Fact]
@@ -46,7 +55,7 @@ namespace UnitTests.Contratos
             database.Seed(client);
             var request = CreateRequest(client, new Vehicle { VehicleId = 999 }, 1, 5);
 
-            await Assert.ThrowsAsync<VehicleNotFoundException>(() => CreateService().CreateAsync(request));
+            await Assert.ThrowsAsync<VehicleNotFoundException>(() => CreateContractAsync(request));
         }
 
         [Fact]
@@ -56,10 +65,33 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(client, vehicle);
 
-            var contract = await CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 5));
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 1, 5));
 
             Assert.Equal(ContractStatus.Scheduled, contract.Status);
             Assert.Single(await CreateService().GetAllAsync(new ContractFilterDTO()));
+        }
+
+        [Fact]
+        public async Task CreateAsync_ValidContract_StoresUserWhoCreatedIt()
+        {
+            var client = TestData.CreateClient();
+            var vehicle = TestData.CreateVehicle();
+            database.Seed(client, vehicle);
+
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 1, 5));
+
+            Assert.Equal(employee.UserId, contract.CreatedByUserId);
+            Assert.Equal(employee.Name, contract.CreatedByUserName);
+        }
+
+        [Fact]
+        public async Task CreateAsync_UserNotFound_ThrowsUserNotFoundException()
+        {
+            var client = TestData.CreateClient();
+            var vehicle = TestData.CreateVehicle();
+            database.Seed(client, vehicle);
+
+            await Assert.ThrowsAsync<UserNotFoundException>(() => CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 5), 999));
         }
 
         [Fact]
@@ -69,7 +101,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(client, vehicle);
 
-            await Assert.ThrowsAsync<ClientUnavailableException>(() => CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 5)));
+            await Assert.ThrowsAsync<ClientUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 1, 5)));
         }
 
         [Fact]
@@ -79,7 +111,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle(status: RecordStatus.Inactive);
             database.Seed(client, vehicle);
 
-            await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 5)));
+            await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 1, 5)));
         }
 
         [Fact]
@@ -90,7 +122,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle("AB-12-CD");
             database.Seed(TestData.CreateContract(client, otherVehicle, -10, -2), vehicle);
 
-            await Assert.ThrowsAsync<ClientUnavailableException>(() => CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 5)));
+            await Assert.ThrowsAsync<ClientUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 1, 5)));
         }
 
         [Fact]
@@ -101,7 +133,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(TestData.CreateContract(otherClient, vehicle, -10, -2), client);
 
-            await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 5)));
+            await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 1, 5)));
         }
 
         [Theory]
@@ -117,7 +149,7 @@ namespace UnitTests.Contratos
             database.Seed(TestData.CreateContract(otherClient, vehicle, 3, 7), client);
 
             await Assert.ThrowsAsync<VehicleUnavailableException>(() =>
-                CreateService().CreateAsync(CreateRequest(client, vehicle, startInDays, endInDays)));
+                CreateContractAsync(CreateRequest(client, vehicle, startInDays, endInDays)));
         }
 
         [Fact]
@@ -128,7 +160,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(TestData.CreateContract(otherClient, vehicle, 1, 3), client);
 
-            var contract = await CreateService().CreateAsync(CreateRequest(client, vehicle, 4, 6));
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 4, 6));
 
             Assert.Equal(ContractStatus.Scheduled, contract.Status);
         }
@@ -141,7 +173,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(TestData.CreateContract(otherClient, vehicle, -5, 5, returnedInDays: -1, endMileage: 1500), client);
 
-            var contract = await CreateService().CreateAsync(CreateRequest(client, vehicle, 0, 3, startMileage: 1500));
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 0, 3, startMileage: 1500));
 
             Assert.Equal(ContractStatus.Active, contract.Status);
         }
@@ -155,7 +187,7 @@ namespace UnitTests.Contratos
             database.Seed(TestData.CreateContract(otherClient, vehicle, -5, 5, returnedInDays: 0, endMileage: 1500), client);
 
             await Assert.ThrowsAsync<VehicleUnavailableException>(() =>
-                CreateService().CreateAsync(CreateRequest(client, vehicle, 0, 3, startMileage: 1500)));
+                CreateContractAsync(CreateRequest(client, vehicle, 0, 3, startMileage: 1500)));
         }
 
         [Fact]
@@ -166,7 +198,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(TestData.CreateContract(otherClient, vehicle, 1, 5, cancelled: true), client);
 
-            var contract = await CreateService().CreateAsync(CreateRequest(client, vehicle, 2, 4));
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 2, 4));
 
             Assert.Equal(ContractStatus.Scheduled, contract.Status);
         }
@@ -179,7 +211,7 @@ namespace UnitTests.Contratos
             database.Seed(TestData.CreateContract(client, vehicle, -10, -5, startMileage: 14000, returnedInDays: -5, endMileage: 15000));
 
             await Assert.ThrowsAsync<InvalidMileageException>(() =>
-                CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 3, startMileage: 14999)));
+                CreateContractAsync(CreateRequest(client, vehicle, 1, 3, startMileage: 14999)));
         }
 
         [Fact]
@@ -189,7 +221,7 @@ namespace UnitTests.Contratos
             var vehicle = TestData.CreateVehicle();
             database.Seed(TestData.CreateContract(client, vehicle, -10, -5, startMileage: 14000, returnedInDays: -5, endMileage: 15000));
 
-            var contract = await CreateService().CreateAsync(CreateRequest(client, vehicle, 1, 3, startMileage: 15000));
+            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 1, 3, startMileage: 15000));
 
             Assert.Equal(15000, contract.StartMileage);
         }

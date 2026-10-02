@@ -33,6 +33,10 @@ namespace API.Contratos.DTOs
 
         public ContractStatus Status { get; set; }
 
+        public int CreatedByUserId { get; set; }
+
+        public string CreatedByUserName { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
 
         public static ICollection<ContractDTO> FromModelList(ICollection<Contract> models, DateOnly today)
@@ -64,6 +68,8 @@ namespace API.Contratos.DTOs
                 ReturnedAt = model.ReturnedAt,
                 CancelledAt = model.CancelledAt,
                 Status = model.GetStatusOn(today),
+                CreatedByUserId = model.CreatedByUserId,
+                CreatedByUserName = model.CreatedByUser.Name,
                 CreatedAt = model.CreatedAt
             };
         }

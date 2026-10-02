@@ -5,6 +5,7 @@ using API.Contratos.Interfaces;
 using API.Data;
 using API.Models;
 using API.Models.Enums;
+using API.Utilizadores.Exceptions;
 using API.Veiculos.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -26,7 +27,8 @@ namespace API.Contratos.Services
             IQueryable<Contract> query = context.Contracts
                 .AsNoTracking()
                 .Include(c => c.Client)
-                .Include(c => c.Vehicle);
+                .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser);
 
             if (filters.VehicleId != null)
                 query = query.Where(c => c.VehicleId == filters.VehicleId);
@@ -52,6 +54,7 @@ namespace API.Contratos.Services
                 .AsNoTracking()
                 .Include(c => c.Client)
                 .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
@@ -60,13 +63,18 @@ namespace API.Contratos.Services
             return ContractDTO.FromModel(contract, Today());
         }
 
-        public async Task<ContractDTO> CreateAsync(CreateContractDTO dto)
+        public async Task<ContractDTO> CreateAsync(CreateContractDTO dto, int userId)
         {
             var today = Today();
             var startDate = dto.StartDate!.Value;
             var endDate = dto.EndDate!.Value;
 
             await using var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+            var createdByUser = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (createdByUser == null)
+                throw new UserNotFoundException("Utilizador não encontrado.");
 
             var client = await context.Clients.FirstOrDefaultAsync(c => c.ClientId == dto.ClientId);
 
@@ -130,6 +138,7 @@ namespace API.Contratos.Services
             {
                 Client = client,
                 Vehicle = vehicle,
+                CreatedByUser = createdByUser,
                 StartDate = startDate,
                 EndDate = endDate,
                 StartMileage = dto.StartMileage!.Value
@@ -147,6 +156,7 @@ namespace API.Contratos.Services
             var contract = await context.Contracts
                 .Include(c => c.Client)
                 .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
@@ -177,6 +187,7 @@ namespace API.Contratos.Services
             var contract = await context.Contracts
                 .Include(c => c.Client)
                 .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)

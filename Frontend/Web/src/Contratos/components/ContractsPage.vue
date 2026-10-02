@@ -183,6 +183,11 @@ onMounted(loadContracts)
               <template v-if="data.endMileage !== null">→ {{ data.endMileage }} km</template>
             </template>
           </Column>
+          <Column field="createdByUserName" header="Criado por" sortable>
+            <template #body="{ data }">
+              <TruncatedText :text="data.createdByUserName" max-width="10rem" />
+            </template>
+          </Column>
           <Column field="status" header="Estado" sortable>
             <template #body="{ data }">
               <Tag

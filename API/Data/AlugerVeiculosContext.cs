@@ -34,6 +34,13 @@ namespace API.Data
                 .HasForeignKey(c => c.VehicleId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            // Contract -> User
+            modelBuilder.Entity<Contract>()
+                .HasOne(c => c.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // RefreshToken -> User
             modelBuilder.Entity<RefreshToken>()
                 .HasOne(rt => rt.User)
