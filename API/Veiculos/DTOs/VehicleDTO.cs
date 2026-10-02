@@ -47,7 +47,7 @@ namespace API.Veiculos.DTOs
                 Year = model.Year,
                 FuelType = model.FuelType,
                 Status = model.Status,
-                Availability = model.IsRentedOn(today) ? VehicleAvailability.Rented : VehicleAvailability.Available,
+                Availability = model.GetAvailabilityOn(today),
                 LastMileage = model.GetLastMileage(),
                 CreatedAt = model.CreatedAt
             };

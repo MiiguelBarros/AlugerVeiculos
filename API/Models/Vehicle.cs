@@ -1,4 +1,4 @@
-﻿using API.Models.Enums;
+using API.Models.Enums;
 
 namespace API.Models
 {
@@ -25,6 +25,17 @@ namespace API.Models
         public bool IsRentedOn(DateOnly date)
         {
             return Contracts.Any(c => c.IsOngoingOn(date));
+        }
+
+        public VehicleAvailability GetAvailabilityOn(DateOnly date)
+        {
+            if (IsRentedOn(date))
+                return VehicleAvailability.Rented;
+
+            if (Contracts.Any(c => c.IsPending()))
+                return VehicleAvailability.Reserved;
+
+            return VehicleAvailability.Available;
         }
 
         public int? GetLastMileage()

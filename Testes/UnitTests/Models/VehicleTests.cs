@@ -1,4 +1,5 @@
 using API.Models;
+using API.Models.Enums;
 using UnitTests.Infrastructure;
 
 namespace UnitTests.Models
@@ -44,6 +45,39 @@ namespace UnitTests.Models
             var vehicle = CreateVehicleWithContract(-5, 3, returnedInDays: -1);
 
             Assert.False(vehicle.IsRentedOn(TestData.Today));
+        }
+
+        [Fact]
+        public void GetAvailabilityOn_VehicleWithoutContracts_ReturnsAvailable()
+        {
+            var vehicle = TestData.CreateVehicle();
+
+            Assert.Equal(VehicleAvailability.Available, vehicle.GetAvailabilityOn(TestData.Today));
+        }
+
+        [Fact]
+        public void GetAvailabilityOn_OngoingContract_ReturnsRented()
+        {
+            var vehicle = CreateVehicleWithContract(-1, 3);
+
+            Assert.Equal(VehicleAvailability.Rented, vehicle.GetAvailabilityOn(TestData.Today));
+        }
+
+        [Fact]
+        public void GetAvailabilityOn_ScheduledContract_ReturnsReserved()
+        {
+            var vehicle = CreateVehicleWithContract(2, 5);
+
+            Assert.Equal(VehicleAvailability.Reserved, vehicle.GetAvailabilityOn(TestData.Today));
+        }
+
+        [Fact]
+        public void GetAvailabilityOn_ReturnedOrCancelledContracts_ReturnsAvailable()
+        {
+            var vehicle = CreateVehicleWithContract(-5, -1, returnedInDays: -1);
+            vehicle.Contracts.Add(TestData.CreateContract(TestData.CreateClient(), vehicle, 2, 5, cancelled: true));
+
+            Assert.Equal(VehicleAvailability.Available, vehicle.GetAvailabilityOn(TestData.Today));
         }
 
         [Fact]

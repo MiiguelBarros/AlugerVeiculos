@@ -48,6 +48,22 @@ namespace UnitTests.Contratos
         }
 
         [Fact]
+        public void Validate_StartDateMoreThanSevenDaysAhead_ReturnsError()
+        {
+            var request = CreateValidRequest(startInDays: 8, endInDays: 10);
+
+            Assert.Contains(nameof(CreateContractDTO.StartDate), DtoValidator.InvalidFields(request));
+        }
+
+        [Fact]
+        public void Validate_StartDateSevenDaysAhead_IsValid()
+        {
+            var request = CreateValidRequest(startInDays: 7, endInDays: 10);
+
+            Assert.Empty(DtoValidator.Validate(request));
+        }
+
+        [Fact]
         public void Validate_EndDateEqualToStartDate_ReturnsError()
         {
             var request = CreateValidRequest(startInDays: 2, endInDays: 2);

@@ -101,31 +101,23 @@ namespace API.Contratos.Services
             if (clientHasOverdueContract)
                 throw new ClientUnavailableException("O cliente tem um contrato em atraso e só pode fazer novos contratos depois de devolver o veículo.");
 
-            var vehicleHasOverdueContract = await context.Contracts.AnyAsync(c =>
+            var pendingContract = await context.Contracts.FirstOrDefaultAsync(c =>
                 c.VehicleId == vehicle.VehicleId &&
                 c.CancelledAt == null &&
-                c.ReturnedAt == null &&
-                c.EndDate < today);
+                c.ReturnedAt == null);
 
-            if (vehicleHasOverdueContract)
-                throw new VehicleUnavailableException("O veículo tem um contrato em atraso e só pode ser alugado depois de ser devolvido.");
-
-            var overlappingContract = await context.Contracts
-                .Where(c =>
-                    c.VehicleId == vehicle.VehicleId &&
-                    c.CancelledAt == null &&
-                    c.StartDate <= endDate &&
-                    startDate <= (c.ReturnedAt ?? c.EndDate))
-                .OrderBy(c => c.StartDate)
-                .FirstOrDefaultAsync();
-
-            if (overlappingContract != null)
-            {
-                var overlappingEnd = overlappingContract.ReturnedAt ?? overlappingContract.EndDate;
+            if (pendingContract != null)
                 throw new VehicleUnavailableException(
-                    $"O veículo está reservado de {overlappingContract.StartDate.ToString(DateFormat)} a {overlappingEnd.ToString(DateFormat)}. " +
-                    "Um novo contrato só pode começar no dia seguinte ao fim do anterior, para preparação do veículo.");
-            }
+                    $"O veículo tem um contrato por concluir ({pendingContract.StartDate.ToString(DateFormat)} a {pendingContract.EndDate.ToString(DateFormat)}) " +
+                    "e só pode ser alugado depois de ser devolvido.");
+
+            var lastReturnDate = await context.Contracts
+                .Where(c => c.VehicleId == vehicle.VehicleId && c.ReturnedAt != null)
+                .MaxAsync(c => c.ReturnedAt);
+
+            if (lastReturnDate != null && startDate <= lastReturnDate)
+                throw new VehicleUnavailableException(
+                    $"O veículo foi devolvido a {lastReturnDate.Value.ToString(DateFormat)} e só pode ser alugado a partir do dia seguinte, para preparação.");
 
             var lastEndMileage = await context.Contracts
                 .Where(c => c.VehicleId == vehicle.VehicleId && c.EndMileage != null)

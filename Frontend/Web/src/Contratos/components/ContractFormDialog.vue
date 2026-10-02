@@ -42,7 +42,9 @@ const errorMessage = ref('')
 const loadingOptions = ref(false)
 const saving = ref(false)
 
+const maxAdvanceDays = 7
 const minStartDate = today()
+const maxStartDate = addDays(minStartDate, maxAdvanceDays)
 const minEndDate = computed(() => addDays(form.startDate ?? minStartDate, 1))
 
 const vehicleOptions = computed<SelectOption[]>(() =>
@@ -74,7 +76,7 @@ async function loadOptions() {
   try {
     const [clients, activeVehicles] = await Promise.all([
       clientService.getAll({ status: 'Active' }),
-      vehicleService.getAll({ status: 'Active' }),
+      vehicleService.getAll({ status: 'Active', availability: 'Available' }),
     ])
 
     clientOptions.value = clients.map((client) => ({
@@ -178,7 +180,7 @@ async function submit() {
           option-label="label"
           option-value="value"
           placeholder="Selecione o veículo"
-          empty-message="Não existem veículos ativos."
+          empty-message="Não existem veículos disponíveis."
           empty-filter-message="Nenhum veículo encontrado."
           :loading="loadingOptions"
           :invalid="!!fieldErrors.vehicleId"
@@ -198,6 +200,7 @@ async function submit() {
             input-id="startDate"
             date-format="dd/mm/yy"
             :min-date="minStartDate"
+            :max-date="maxStartDate"
             :invalid="!!fieldErrors.startDate"
             show-icon
             fluid
@@ -205,6 +208,7 @@ async function submit() {
           <Message v-if="fieldErrors.startDate" severity="error" size="small" variant="simple">
             {{ fieldErrors.startDate[0] }}
           </Message>
+          <small v-else class="field-hint">Até {{ maxAdvanceDays }} dias a partir de hoje.</small>
         </div>
 
         <div class="field">

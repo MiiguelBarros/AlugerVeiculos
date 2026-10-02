@@ -30,11 +30,13 @@ export const fuelTypeLabels: Record<FuelType, string> = {
 export const vehicleAvailabilityLabels: Record<VehicleAvailability, string> = {
   Available: 'Disponível',
   Rented: 'Alugado',
+  Reserved: 'Reservado',
 }
 
 export const vehicleAvailabilitySeverities: Record<VehicleAvailability, TagSeverity> = {
   Available: 'success',
   Rented: 'info',
+  Reserved: 'warn',
 }
 
 export const contractStatusLabels: Record<ContractStatus, string> = {

@@ -33,6 +33,7 @@ const availabilityOptions: { label: string; value: AvailabilityFilter }[] = [
   { label: 'Todos', value: 'All' },
   { label: 'Disponíveis', value: 'Available' },
   { label: 'Alugados', value: 'Rented' },
+  { label: 'Reservados', value: 'Reserved' },
 ]
 
 const statusOptions: { label: string; value: StatusFilter }[] = [

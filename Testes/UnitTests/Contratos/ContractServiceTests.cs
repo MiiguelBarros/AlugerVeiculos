@@ -136,37 +136,30 @@ namespace UnitTests.Contratos
             await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 1, 5)));
         }
 
-        [Theory]
-        [InlineData(4, 6)]
-        [InlineData(1, 9)]
-        [InlineData(7, 9)]
-        [InlineData(1, 3)]
-        public async Task CreateAsync_OverlappingPeriod_ThrowsVehicleUnavailableException(int startInDays, int endInDays)
+        [Fact]
+        public async Task CreateAsync_VehicleWithScheduledContract_ThrowsVehicleUnavailableException()
         {
             var otherClient = TestData.CreateClient("outro@cliente.com", "L-7654321");
             var client = TestData.CreateClient();
             var vehicle = TestData.CreateVehicle();
-            database.Seed(TestData.CreateContract(otherClient, vehicle, 3, 7), client);
+            database.Seed(TestData.CreateContract(otherClient, vehicle, 4, 6), client);
 
-            await Assert.ThrowsAsync<VehicleUnavailableException>(() =>
-                CreateContractAsync(CreateRequest(client, vehicle, startInDays, endInDays)));
+            await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 1, 2)));
         }
 
         [Fact]
-        public async Task CreateAsync_StartingDayAfterPreviousEnd_Succeeds()
+        public async Task CreateAsync_VehicleWithActiveContract_ThrowsVehicleUnavailableException()
         {
             var otherClient = TestData.CreateClient("outro@cliente.com", "L-7654321");
             var client = TestData.CreateClient();
             var vehicle = TestData.CreateVehicle();
-            database.Seed(TestData.CreateContract(otherClient, vehicle, 1, 3), client);
+            database.Seed(TestData.CreateContract(otherClient, vehicle, -1, 2), client);
 
-            var contract = await CreateContractAsync(CreateRequest(client, vehicle, 4, 6));
-
-            Assert.Equal(ContractStatus.Scheduled, contract.Status);
+            await Assert.ThrowsAsync<VehicleUnavailableException>(() => CreateContractAsync(CreateRequest(client, vehicle, 4, 6)));
         }
 
         [Fact]
-        public async Task CreateAsync_StartingDayAfterEarlyReturn_Succeeds()
+        public async Task CreateAsync_StartingDayAfterReturn_Succeeds()
         {
             var otherClient = TestData.CreateClient("outro@cliente.com", "L-7654321");
             var client = TestData.CreateClient();
@@ -191,7 +184,7 @@ namespace UnitTests.Contratos
         }
 
         [Fact]
-        public async Task CreateAsync_OverlappingCancelledContract_Succeeds()
+        public async Task CreateAsync_VehicleWithCancelledContract_Succeeds()
         {
             var otherClient = TestData.CreateClient("outro@cliente.com", "L-7654321");
             var client = TestData.CreateClient();

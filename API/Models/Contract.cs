@@ -1,4 +1,4 @@
-﻿using API.Models.Enums;
+using API.Models.Enums;
 
 namespace API.Models
 {
@@ -32,9 +32,14 @@ namespace API.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public bool IsPending()
+        {
+            return CancelledAt == null && ReturnedAt == null;
+        }
+
         public bool IsOngoingOn(DateOnly date)
         {
-            return CancelledAt == null && ReturnedAt == null && StartDate <= date;
+            return IsPending() && StartDate <= date;
         }
 
         public ContractStatus GetStatusOn(DateOnly date)
