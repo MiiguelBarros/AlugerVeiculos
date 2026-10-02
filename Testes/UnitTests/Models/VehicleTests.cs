@@ -45,5 +45,25 @@ namespace UnitTests.Models
 
             Assert.False(vehicle.IsRentedOn(TestData.Today));
         }
+
+        [Fact]
+        public void GetLastMileage_VehicleWithoutContracts_ReturnsNull()
+        {
+            var vehicle = TestData.CreateVehicle();
+
+            Assert.Null(vehicle.GetLastMileage());
+        }
+
+        [Fact]
+        public void GetLastMileage_ReturnedContracts_ReturnsHighestEndMileage()
+        {
+            var vehicle = TestData.CreateVehicle();
+            var client = TestData.CreateClient();
+            vehicle.Contracts.Add(TestData.CreateContract(client, vehicle, -20, -15, returnedInDays: -15, endMileage: 14800));
+            vehicle.Contracts.Add(TestData.CreateContract(client, vehicle, -10, -5, returnedInDays: -5, endMileage: 15300));
+            vehicle.Contracts.Add(TestData.CreateContract(client, vehicle, 2, 5));
+
+            Assert.Equal(15300, vehicle.GetLastMileage());
+        }
     }
 }

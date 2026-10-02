@@ -26,5 +26,10 @@ namespace API.Models
         {
             return Contracts.Any(c => c.IsOngoingOn(date));
         }
+
+        public int? GetLastMileage()
+        {
+            return Contracts.Max(c => c.EndMileage);
+        }
     }
 }

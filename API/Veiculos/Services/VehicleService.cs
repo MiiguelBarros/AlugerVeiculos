@@ -21,7 +21,7 @@ namespace API.Veiculos.Services
         {
             IQueryable<Vehicle> query = context.Vehicles
                 .AsNoTracking()
-                .Include(v => v.Contracts.Where(c => c.CancelledAt == null && c.ReturnedAt == null));
+                .Include(v => v.Contracts);
 
             if (filters.Status != null)
                 query = query.Where(v => v.Status == filters.Status);
@@ -44,7 +44,7 @@ namespace API.Veiculos.Services
         {
             var vehicle = await context.Vehicles
                 .AsNoTracking()
-                .Include(v => v.Contracts.Where(c => c.CancelledAt == null && c.ReturnedAt == null))
+                .Include(v => v.Contracts)
                 .FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
 
             if (vehicle == null)
@@ -79,7 +79,7 @@ namespace API.Veiculos.Services
         public async Task<VehicleDTO> UpdateAsync(int vehicleId, VehicleRequestDTO dto)
         {
             var vehicle = await context.Vehicles
-                .Include(v => v.Contracts.Where(c => c.CancelledAt == null && c.ReturnedAt == null))
+                .Include(v => v.Contracts)
                 .FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
 
             if (vehicle == null)
