@@ -1,1 +1,1 @@
-export type VehicleAvailability = 'Available' | 'Rented'
+export type VehicleAvailability = 'Available' | 'Rented' | 'Reserved'

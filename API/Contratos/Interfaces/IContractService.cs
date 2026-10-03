@@ -8,7 +8,7 @@ namespace API.Contratos.Interfaces
 
         public Task<ContractDTO> GetByIdAsync(int contractId);
 
-        public Task<ContractDTO> CreateAsync(CreateContractDTO dto);
+        public Task<ContractDTO> CreateAsync(CreateContractDTO dto, int userId);
 
         public Task<ContractDTO> ReturnAsync(int contractId, ReturnContractDTO dto);
 

@@ -47,15 +47,17 @@ namespace UnitTests.Infrastructure
         }
 
         public static Contract CreateContract(Client client, Vehicle vehicle, int startInDays, int endInDays,
-            int startMileage = 1000, int? returnedInDays = null, int? endMileage = null, bool cancelled = false)
+            int startMileage = 1000, int? returnedInDays = null, int? endMileage = null, bool cancelled = false, User? createdBy = null, decimal dailyRate = 50)
         {
             return new Contract
             {
                 Client = client,
                 Vehicle = vehicle,
+                CreatedByUser = createdBy ?? CreateUser($"{Guid.NewGuid():N}@test.com", Role.Employee),
                 StartDate = Today.AddDays(startInDays),
                 EndDate = Today.AddDays(endInDays),
                 StartMileage = startMileage,
+                DailyRate = dailyRate,
                 ReturnedAt = returnedInDays == null ? null : Today.AddDays(returnedInDays.Value),
                 EndMileage = endMileage,
                 CancelledAt = cancelled ? DateTime.UtcNow : null

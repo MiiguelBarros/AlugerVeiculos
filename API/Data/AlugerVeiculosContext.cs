@@ -34,6 +34,13 @@ namespace API.Data
                 .HasForeignKey(c => c.VehicleId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            // Contract -> User
+            modelBuilder.Entity<Contract>()
+                .HasOne(c => c.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // RefreshToken -> User
             modelBuilder.Entity<RefreshToken>()
                 .HasOne(rt => rt.User)
@@ -109,6 +116,9 @@ namespace API.Data
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.TokenHash)
                 .IsUnique();
+
+            // Decimal precision
+            modelBuilder.Entity<Contract>().Property(c => c.DailyRate).HasPrecision(10, 2);
 
             // Availability lookups
             modelBuilder.Entity<Contract>()

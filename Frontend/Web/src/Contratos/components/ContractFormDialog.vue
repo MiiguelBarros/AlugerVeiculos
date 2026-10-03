@@ -11,6 +11,7 @@ import { contractService } from '@/Contratos/services/contract.service'
 import { clientService } from '@/Clientes/services/client.service'
 import { vehicleService } from '@/Veiculos/services/vehicle.service'
 import { getErrorMessage, getValidationErrors } from '@/Shared/utils/apiErrors'
+import { formatCurrency } from '@/Shared/utils/currency'
 import { addDays, today, toDateOnly } from '@/Shared/utils/dates'
 import type { Contract } from '@/Contratos/models/Contract'
 import type { ValidationErrors } from '@/Shared/models/ResponseDTO'
@@ -22,6 +23,7 @@ interface ContractForm {
   startDate: Date | null
   endDate: Date | null
   startMileage: number | null
+  dailyRate: number | null
 }
 
 interface SelectOption {
@@ -42,7 +44,9 @@ const errorMessage = ref('')
 const loadingOptions = ref(false)
 const saving = ref(false)
 
+const maxAdvanceDays = 7
 const minStartDate = today()
+const maxStartDate = addDays(minStartDate, maxAdvanceDays)
 const minEndDate = computed(() => addDays(form.startDate ?? minStartDate, 1))
 
 const vehicleOptions = computed<SelectOption[]>(() =>
@@ -53,6 +57,15 @@ const vehicleOptions = computed<SelectOption[]>(() =>
 )
 
 const selectedVehicle = computed(() => vehicles.value.find((vehicle) => vehicle.vehicleId === form.vehicleId) ?? null)
+
+const priceHint = computed(() => {
+  if (!form.startDate || !form.endDate || form.dailyRate === null)
+    return 'O total é calculado a partir do preço por dia e das datas.'
+
+  const days = Math.round((form.endDate.getTime() - form.startDate.getTime()) / 86_400_000)
+
+  return `Total: ${formatCurrency(form.dailyRate * days)} (${days} ${days === 1 ? 'dia' : 'dias'}).`
+})
 
 const mileageHint = computed(() => {
   if (!selectedVehicle.value)
@@ -65,7 +78,7 @@ const mileageHint = computed(() => {
 })
 
 function createEmptyForm(): ContractForm {
-  return { clientId: null, vehicleId: null, startDate: null, endDate: null, startMileage: null }
+  return { clientId: null, vehicleId: null, startDate: null, endDate: null, startMileage: null, dailyRate: null }
 }
 
 async function loadOptions() {
@@ -74,7 +87,7 @@ async function loadOptions() {
   try {
     const [clients, activeVehicles] = await Promise.all([
       clientService.getAll({ status: 'Active' }),
-      vehicleService.getAll({ status: 'Active' }),
+      vehicleService.getAll({ status: 'Active', availability: 'Available' }),
     ])
 
     clientOptions.value = clients.map((client) => ({
@@ -121,6 +134,7 @@ async function submit() {
       startDate: form.startDate ? toDateOnly(form.startDate) : null,
       endDate: form.endDate ? toDateOnly(form.endDate) : null,
       startMileage: form.startMileage,
+      dailyRate: form.dailyRate,
     })
 
     toast.add({
@@ -178,7 +192,7 @@ async function submit() {
           option-label="label"
           option-value="value"
           placeholder="Selecione o veículo"
-          empty-message="Não existem veículos ativos."
+          empty-message="Não existem veículos disponíveis."
           empty-filter-message="Nenhum veículo encontrado."
           :loading="loadingOptions"
           :invalid="!!fieldErrors.vehicleId"
@@ -198,6 +212,7 @@ async function submit() {
             input-id="startDate"
             date-format="dd/mm/yy"
             :min-date="minStartDate"
+            :max-date="maxStartDate"
             :invalid="!!fieldErrors.startDate"
             show-icon
             fluid
@@ -205,6 +220,7 @@ async function submit() {
           <Message v-if="fieldErrors.startDate" severity="error" size="small" variant="simple">
             {{ fieldErrors.startDate[0] }}
           </Message>
+          <small v-else class="field-hint">Até {{ maxAdvanceDays }} dias a partir de hoje.</small>
         </div>
 
         <div class="field">
@@ -224,21 +240,41 @@ async function submit() {
         </div>
       </div>
 
-      <div class="field">
-        <label for="startMileage" class="field-label">Quilometragem inicial</label>
-        <InputNumber
-          v-model="form.startMileage"
-          input-id="startMileage"
-          suffix=" km"
-          :min="selectedVehicle?.lastMileage ?? 0"
-          :use-grouping="false"
-          :invalid="!!fieldErrors.startMileage"
-          fluid
-        />
-        <Message v-if="fieldErrors.startMileage" severity="error" size="small" variant="simple">
-          {{ fieldErrors.startMileage[0] }}
-        </Message>
-        <small v-else class="field-hint">{{ mileageHint }}</small>
+      <div class="form-row">
+        <div class="field">
+          <label for="startMileage" class="field-label">Quilometragem inicial</label>
+          <InputNumber
+            v-model="form.startMileage"
+            input-id="startMileage"
+            suffix=" km"
+            :min="selectedVehicle?.lastMileage ?? 0"
+            :use-grouping="false"
+            :invalid="!!fieldErrors.startMileage"
+            fluid
+          />
+          <Message v-if="fieldErrors.startMileage" severity="error" size="small" variant="simple">
+            {{ fieldErrors.startMileage[0] }}
+          </Message>
+          <small v-else class="field-hint">{{ mileageHint }}</small>
+        </div>
+
+        <div class="field">
+          <label for="dailyRate" class="field-label">Preço por dia</label>
+          <InputNumber
+            v-model="form.dailyRate"
+            input-id="dailyRate"
+            mode="currency"
+            currency="EUR"
+            locale="pt-PT"
+            :min="0"
+            :invalid="!!fieldErrors.dailyRate"
+            fluid
+          />
+          <Message v-if="fieldErrors.dailyRate" severity="error" size="small" variant="simple">
+            {{ fieldErrors.dailyRate[0] }}
+          </Message>
+          <small v-else class="field-hint">{{ priceHint }}</small>
+        </div>
       </div>
     </form>
 

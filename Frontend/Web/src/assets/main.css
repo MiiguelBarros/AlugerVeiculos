@@ -65,6 +65,9 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 360px;
+  background: var(--app-grey);
 }
 
 .pill {
@@ -112,4 +115,21 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 0.25rem;
+}
+
+
+.p-datatable {
+  font-size: 0.875rem;
+}
+
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.cell-secondary {
+  color: #6b7075;
+  font-size: 0.8125rem;
 }

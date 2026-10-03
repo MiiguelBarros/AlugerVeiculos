@@ -81,13 +81,13 @@ namespace UnitTests.Veiculos
         }
 
         [Fact]
-        public async Task GetAllAsync_VehicleWithOnlyScheduledContract_ReturnsAvailable()
+        public async Task GetAllAsync_VehicleWithOnlyScheduledContract_ReturnsReserved()
         {
             database.Seed(TestData.CreateContract(TestData.CreateClient(), TestData.CreateVehicle(), 2, 4));
 
             var vehicles = await CreateService().GetAllAsync(new VehicleFilterDTO());
 
-            Assert.Equal(VehicleAvailability.Available, Assert.Single(vehicles).Availability);
+            Assert.Equal(VehicleAvailability.Reserved, Assert.Single(vehicles).Availability);
         }
 
         [Fact]

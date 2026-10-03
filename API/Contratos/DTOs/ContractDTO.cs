@@ -27,11 +27,21 @@ namespace API.Contratos.DTOs
 
         public int? EndMileage { get; set; }
 
+        public decimal DailyRate { get; set; }
+
+        public int NumberOfDays { get; set; }
+
+        public decimal TotalPrice { get; set; }
+
         public DateOnly? ReturnedAt { get; set; }
 
         public DateTime? CancelledAt { get; set; }
 
         public ContractStatus Status { get; set; }
+
+        public int CreatedByUserId { get; set; }
+
+        public string CreatedByUserName { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; }
 
@@ -61,9 +71,14 @@ namespace API.Contratos.DTOs
                 EndDate = model.EndDate,
                 StartMileage = model.StartMileage,
                 EndMileage = model.EndMileage,
+                DailyRate = model.DailyRate,
+                NumberOfDays = model.GetNumberOfDays(),
+                TotalPrice = model.GetTotalPrice(),
                 ReturnedAt = model.ReturnedAt,
                 CancelledAt = model.CancelledAt,
                 Status = model.GetStatusOn(today),
+                CreatedByUserId = model.CreatedByUserId,
+                CreatedByUserName = model.CreatedByUser.Name,
                 CreatedAt = model.CreatedAt
             };
         }

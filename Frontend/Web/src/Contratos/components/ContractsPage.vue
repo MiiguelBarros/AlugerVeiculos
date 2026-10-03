@@ -16,6 +16,7 @@ import TruncatedText from '@/Shared/components/TruncatedText.vue'
 import { contractService } from '@/Contratos/services/contract.service'
 import { useAuthStore } from '@/AutenticacaoAutorizacao/stores/auth.store'
 import { getErrorMessage } from '@/Shared/utils/apiErrors'
+import { formatCurrency } from '@/Shared/utils/currency'
 import { formatDate, today, toDateOnly } from '@/Shared/utils/dates'
 import { contractStatusLabels, contractStatusSeverities } from '@/Shared/utils/labels'
 import type { Contract } from '@/Contratos/models/Contract'
@@ -162,28 +163,43 @@ onMounted(loadContracts)
           </Column>
           <Column field="vehicleLicensePlate" header="Veículo" sortable>
             <template #body="{ data }">
-              <div class="vehicle">
+              <div class="cell-stack">
                 <span class="plate">{{ data.vehicleLicensePlate }}</span>
-                <TruncatedText :text="`${data.vehicleBrand} ${data.vehicleModel}`" max-width="8rem" />
+                <TruncatedText class="cell-secondary" :text="`${data.vehicleBrand} ${data.vehicleModel}`" max-width="9rem" />
               </div>
             </template>
           </Column>
-          <Column field="startDate" header="Início" sortable>
-            <template #body="{ data }">{{ formatDate(data.startDate) }}</template>
-          </Column>
-          <Column field="endDate" header="Fim" sortable>
-            <template #body="{ data }">{{ formatDate(data.endDate) }}</template>
-          </Column>
-          <Column field="returnedAt" header="Devolução" sortable>
-            <template #body="{ data }">{{ formatDate(data.returnedAt) }}</template>
-          </Column>
-          <Column header="Quilometragem">
+          <Column field="startDate" header="Período" sortable>
             <template #body="{ data }">
-              {{ data.startMileage }} km
-              <template v-if="data.endMileage !== null">→ {{ data.endMileage }} km</template>
+              <div class="cell-stack">
+                <span class="nowrap">{{ formatDate(data.startDate) }} – {{ formatDate(data.endDate) }}</span>
+                <span v-if="data.returnedAt" class="cell-secondary">Devolvido a {{ formatDate(data.returnedAt) }}</span>
+                <span v-else class="cell-secondary">{{ data.numberOfDays }} dia(s)</span>
+              </div>
             </template>
           </Column>
-          <Column field="status" header="Estado" sortable>
+          <Column field="startMileage" header="Quilometragem" sortable>
+            <template #body="{ data }">
+              <div class="cell-stack">
+                <span class="nowrap">{{ data.startMileage }} km</span>
+                <span v-if="data.endMileage !== null" class="cell-secondary nowrap">até {{ data.endMileage }} km</span>
+              </div>
+            </template>
+          </Column>
+          <Column field="totalPrice" header="Preço" sortable>
+            <template #body="{ data }">
+              <div class="cell-stack">
+                <span class="nowrap price">{{ formatCurrency(data.totalPrice) }}</span>
+                <span class="cell-secondary nowrap">{{ formatCurrency(data.dailyRate) }}/dia</span>
+              </div>
+            </template>
+          </Column>
+          <Column field="createdByUserName" header="Criado por" sortable>
+            <template #body="{ data }">
+              <TruncatedText :text="data.createdByUserName" max-width="10rem" />
+            </template>
+          </Column>
+          <Column field="status" header="Estado" :style="{ width: '1%' }" sortable>
             <template #body="{ data }">
               <Tag
                 :value="contractStatusLabels[data.status as ContractStatus]"
@@ -191,9 +207,9 @@ onMounted(loadContracts)
               />
             </template>
           </Column>
-          <Column>
+          <Column :style="{ width: '1%' }">
             <template #body="{ data }">
-              <div class="table-actions">
+              <div class="contract-actions">
                 <Button
                   v-if="canReturn(data)"
                   label="Devolver"
@@ -207,6 +223,7 @@ onMounted(loadContracts)
                   severity="danger"
                   text
                   rounded
+                  size="small"
                   title="Cancelar contrato"
                   aria-label="Cancelar contrato"
                   @click="confirmCancel(data)"
@@ -232,10 +249,8 @@ onMounted(loadContracts)
   font-weight: 700;
 }
 
-.vehicle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.price {
+  font-weight: 700;
 }
 
 .plate {
@@ -246,6 +261,17 @@ onMounted(loadContracts)
   background: #ffffff;
   font-weight: 700;
   letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.contract-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   white-space: nowrap;
 }
 </style>

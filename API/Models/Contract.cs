@@ -1,4 +1,4 @@
-﻿using API.Models.Enums;
+using API.Models.Enums;
 
 namespace API.Models
 {
@@ -22,15 +22,36 @@ namespace API.Models
 
         public int? EndMileage { get; set; }
 
+        public decimal DailyRate { get; set; }
+
         public DateOnly? ReturnedAt { get; set; }
 
         public DateTime? CancelledAt { get; set; }
 
+        public int CreatedByUserId { get; set; }
+
+        public User CreatedByUser { get; set; } = null!;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int GetNumberOfDays()
+        {
+            return EndDate.DayNumber - StartDate.DayNumber;
+        }
+
+        public decimal GetTotalPrice()
+        {
+            return DailyRate * GetNumberOfDays();
+        }
+
+        public bool IsPending()
+        {
+            return CancelledAt == null && ReturnedAt == null;
+        }
 
         public bool IsOngoingOn(DateOnly date)
         {
-            return CancelledAt == null && ReturnedAt == null && StartDate <= date;
+            return IsPending() && StartDate <= date;
         }
 
         public ContractStatus GetStatusOn(DateOnly date)

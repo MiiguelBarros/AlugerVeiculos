@@ -4,4 +4,5 @@ export interface CreateContract {
   startDate: string | null
   endDate: string | null
   startMileage: number | null
+  dailyRate: number | null
 }

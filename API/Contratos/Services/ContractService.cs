@@ -5,6 +5,7 @@ using API.Contratos.Interfaces;
 using API.Data;
 using API.Models;
 using API.Models.Enums;
+using API.Utilizadores.Exceptions;
 using API.Veiculos.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -26,7 +27,8 @@ namespace API.Contratos.Services
             IQueryable<Contract> query = context.Contracts
                 .AsNoTracking()
                 .Include(c => c.Client)
-                .Include(c => c.Vehicle);
+                .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser);
 
             if (filters.VehicleId != null)
                 query = query.Where(c => c.VehicleId == filters.VehicleId);
@@ -52,6 +54,7 @@ namespace API.Contratos.Services
                 .AsNoTracking()
                 .Include(c => c.Client)
                 .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
@@ -60,13 +63,18 @@ namespace API.Contratos.Services
             return ContractDTO.FromModel(contract, Today());
         }
 
-        public async Task<ContractDTO> CreateAsync(CreateContractDTO dto)
+        public async Task<ContractDTO> CreateAsync(CreateContractDTO dto, int userId)
         {
             var today = Today();
             var startDate = dto.StartDate!.Value;
             var endDate = dto.EndDate!.Value;
 
             await using var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+            var createdByUser = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (createdByUser == null)
+                throw new UserNotFoundException("Utilizador não encontrado.");
 
             var client = await context.Clients.FirstOrDefaultAsync(c => c.ClientId == dto.ClientId);
 
@@ -93,31 +101,23 @@ namespace API.Contratos.Services
             if (clientHasOverdueContract)
                 throw new ClientUnavailableException("O cliente tem um contrato em atraso e só pode fazer novos contratos depois de devolver o veículo.");
 
-            var vehicleHasOverdueContract = await context.Contracts.AnyAsync(c =>
+            var pendingContract = await context.Contracts.FirstOrDefaultAsync(c =>
                 c.VehicleId == vehicle.VehicleId &&
                 c.CancelledAt == null &&
-                c.ReturnedAt == null &&
-                c.EndDate < today);
+                c.ReturnedAt == null);
 
-            if (vehicleHasOverdueContract)
-                throw new VehicleUnavailableException("O veículo tem um contrato em atraso e só pode ser alugado depois de ser devolvido.");
-
-            var overlappingContract = await context.Contracts
-                .Where(c =>
-                    c.VehicleId == vehicle.VehicleId &&
-                    c.CancelledAt == null &&
-                    c.StartDate <= endDate &&
-                    startDate <= (c.ReturnedAt ?? c.EndDate))
-                .OrderBy(c => c.StartDate)
-                .FirstOrDefaultAsync();
-
-            if (overlappingContract != null)
-            {
-                var overlappingEnd = overlappingContract.ReturnedAt ?? overlappingContract.EndDate;
+            if (pendingContract != null)
                 throw new VehicleUnavailableException(
-                    $"O veículo está reservado de {overlappingContract.StartDate.ToString(DateFormat)} a {overlappingEnd.ToString(DateFormat)}. " +
-                    "Um novo contrato só pode começar no dia seguinte ao fim do anterior, para preparação do veículo.");
-            }
+                    $"O veículo tem um contrato por concluir ({pendingContract.StartDate.ToString(DateFormat)} a {pendingContract.EndDate.ToString(DateFormat)}) " +
+                    "e só pode ser alugado depois de ser devolvido.");
+
+            var lastReturnDate = await context.Contracts
+                .Where(c => c.VehicleId == vehicle.VehicleId && c.ReturnedAt != null)
+                .MaxAsync(c => c.ReturnedAt);
+
+            if (lastReturnDate != null && startDate <= lastReturnDate)
+                throw new VehicleUnavailableException(
+                    $"O veículo foi devolvido a {lastReturnDate.Value.ToString(DateFormat)} e só pode ser alugado a partir do dia seguinte, para preparação.");
 
             var lastEndMileage = await context.Contracts
                 .Where(c => c.VehicleId == vehicle.VehicleId && c.EndMileage != null)
@@ -130,9 +130,11 @@ namespace API.Contratos.Services
             {
                 Client = client,
                 Vehicle = vehicle,
+                CreatedByUser = createdByUser,
                 StartDate = startDate,
                 EndDate = endDate,
-                StartMileage = dto.StartMileage!.Value
+                StartMileage = dto.StartMileage!.Value,
+                DailyRate = dto.DailyRate!.Value
             };
 
             await context.Contracts.AddAsync(contract);
@@ -147,6 +149,7 @@ namespace API.Contratos.Services
             var contract = await context.Contracts
                 .Include(c => c.Client)
                 .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
@@ -177,6 +180,7 @@ namespace API.Contratos.Services
             var contract = await context.Contracts
                 .Include(c => c.Client)
                 .Include(c => c.Vehicle)
+                .Include(c => c.CreatedByUser)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
