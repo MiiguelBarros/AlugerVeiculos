@@ -90,6 +90,14 @@ const AppPreset = definePreset(Aura, {
         shadow: '0 12px 40px 0 rgba(0, 0, 0, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.08)',
       },
     },
+    datatable: {
+      headerCell: {
+        padding: '0.75rem 0.5rem',
+      },
+      bodyCell: {
+        padding: '0.75rem 0.5rem',
+      },
+    },
   },
 })
 
